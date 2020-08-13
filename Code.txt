@@ -1,0 +1,803 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<ctype.h> 
+#define NAMESIZE 50 //Maximum size of a name i.e Book name or Author name
+typedef struct //Structure of a book
+{
+	char name[NAMESIZE];
+	char isbn[20];
+	char author[NAMESIZE];
+	int year;
+	char status[10];
+} books;
+books *book;//Global Book type pointer
+int count = 0; //Global variable that keeps a count of the number of books
+int size; //Global variable for dynamic memory allocation
+int add(void); //add function asks for book details and adds it in library
+int searchName(char); //search a book by typing its name (called in search function)
+int searchISBN(char); // search a book by typing its ISBN (called in search function)
+int search(void); //invokes search functions, you can search by name or ISBN
+void ShowList(void); //shows the list of all the books
+int DeleteBook(void);// Deletes a book from library
+void Display(int); // Display details of a single book (it is used in search function)
+void Issue(void); //issue a book
+void Receive(void); // receive a book
+void main()
+{
+	int option = -1, t, f, c1 = -1, ch=1;
+	char opt[10], sizeCheck[10];
+	while (-1 == c1)
+	{
+		system("cls");
+		system("COLOR 70");
+		puts("________________________________________ ");
+		puts("                         WELCOME TO ACCESS - IT BOOK MANAGEMENT SYSTEM                       ");
+		puts("________________________________________");
+		printf("\n\n\t\tEnter total No. of Books you want to add in Library    : ");
+		fflush(stdin);
+		gets(sizeCheck);
+		int j=0;
+		for (int i = 0; sizeCheck[i] != '\0'; i++)
+		{
+			if (0 == isdigit(sizeCheck[i]))
+				j++;
+		}
+		if (strlen(sizeCheck) > 10000 || j != 0)
+		{
+			system("cls");
+			system("COlOR 0C");
+			printf("\a\n\n\n\t\t\t\t\tERROR!\n\n\n\t\t\t\t\tPLEASE ENTER VALID INPUT!\n\n\n\n\n\n\t\t\t\t\tYou are required a positive integer\n\n\n\t\t\t\t\t\n\n\n\n");
+			system("pause");
+			c1 = -1;
+		}
+		else
+			c1 = 0;
+		sscanf(sizeCheck, "%d", &size);
+	}
+	book = (books*)malloc(sizeof(books)*(size));
+	system("cls");
+	while (option != 0)
+	{
+	
+		int c = 0;
+		while (c != -1)
+		{
+			system("COLOR 70");
+			fflush(stdin);
+			system("cls");
+			puts("________________________________________ ");
+			puts("                                   ACCESS - IT BOOK MANAGEMENT SYSTEM                       ");
+			puts("________________________________________");
+			printf("\n\n\t 1. Add a Book\n\n\t 2. Search a Book\n\n\t 3. Delete a book\n\n\t 4. Show All Books\n\n\t 5. Issue a Book\n\n\t 6. Recieve a Book\n\n\t 0. Exit\n\n\n\t Option :\t");
+			gets(opt);
+			sscanf(opt, "%d", &option);
+			if (strlen(opt) != 1 || 0 == isdigit(opt[0]) || option > 6 || option < 0)
+			{
+				system("cls");
+				system("COlOR 0C");
+				printf("\a\n\n\n\t\t\t\t\tERROR!\n\n\n\t\t\t\t\tPLEASE CHOOSE CORRECT OPTION!\n\n\t\t\t\t\tEXAMPLE --> Enter 1 if you wish to add a book\t\n\n\n\n\n\n\n\t\t\t");
+				system("pause");
+			}
+			else
+				c = -1;
+		}
+
+		switch (option)
+		{
+		case 1: //Executes add book option
+			t = add();
+			if (0 != t)
+			{
+				system("cls");
+				system("COlOR 0C");
+				printf("\a\n\n\t\tError Saving The Book!\n\t\tNot Enough Memory\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			else
+			{
+				printf("\n\n\t\t\tBOOK SAVED SUCCESSFULLY!\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			break;
+		case 2: //Executes search book option
+			search();
+			break;
+		case 3:
+			f = DeleteBook();//Executes Delete book option
+			break;
+		case 4: //option = 4;(Show all books)
+			if (count != 0)
+			{
+				ShowList();
+			}
+			else
+			{
+				printf("\n\n\t\t No Books To Show\n\n\n\n");
+				system("pause");
+			}
+
+			break;
+		case 5://Issue a Book
+			Issue();
+			break;
+		case 6: //Receive
+			Receive();
+			break;
+		case 0:
+			c1 = -1;
+			option = 0;
+			break;
+		default:
+			break;
+		}
+	}
+}
+//main() ends
+int add()
+{
+	if (size > count)
+	{
+		system("COLOR 8F");
+		if (size > count)
+		{
+			system("cls");
+			printf("%.100s", "........................................................................................................................");
+			printf("%40s", "\n\t\t\tADD");
+			printf("%.100s", "\n........................................................................................................................");
+			//Entering name starts
+			int c = 0; //
+			while (c != -1) //Checks if the name already exists
+			{
+				int t = 0;
+				while (t < 3)
+				{
+					t = 0;
+					printf("\n\nEnter name of the book\t      : ");
+					gets(book[count].name);
+					int r, j;
+					for (int i = 0; book[count].name[i] != '\0'; i++)
+					{
+						r = isalpha(book[count].name[i]); //t remains 0 if there is no alphabet in name
+						j = isdigit(book[count].name[i]); //j remains 0 if there is no digit in name
+						if (r != 0)
+							t += 2;
+						else
+							t--;
+						if (j != 0)
+							t++;
+					}
+					if (t < 3)
+					{
+						printf("\n\n\t\t\tPLEASE ENTER A VALID NAME\n\n\n\n");
+					}
+				}
+				c = searchName(book[count].name);
+				if (c != -1)
+				{
+					printf("\nThe name you entered ALREADY EXIST. Please enter a different name\n\n\t");
+				}
+			}
+			// Entering name ends
+			// Entering ISBN starts
+			c = 0;
+			while (c != -1)//search returns -1 if ISBN already exists
+			{
+				int k = 0; //
+				while (k != -1)
+				{
+					printf("\nEnter ISBN of the book\t      : ");
+					gets(book[count].isbn);
+					int d = 1;
+					for (int i = 0; book[count].isbn[i] != '\0'; i++)
+						d *= isdigit(book[count].isbn[i]);
+					if (strlen(book[count].isbn) != 13 || 0 == d)
+					{
+						printf("\n\n\t\tINVALID INPUT! ISBN must be a 13 digit number\n\t\tPlease input again\n\n");
+						k = 0;
+					}
+					else
+						k = -1;
+				}
+				c = searchISBN(book[count].isbn);
+				if (c != -1)
+				{
+					printf("\nThe ISBN you entered ALREADY EXIST. Please enter a different ISBN\n\n\t");
+				}
+			}
+			//Entering ISBN ends
+			// Entering year starts
+			char Year[10];
+			c = 0;
+			while (c != -1)
+			{
+				// 
+				printf("\nEnter the year of publishing (yyyy) :\t");
+				gets(Year);
+				int l = 0;
+				for (int i = 0; Year[i] != '\0'; i++)
+				{
+					l += isalpha(Year[i]);
+				}
+				if (strlen(Year) != 4 || l != 0)
+				{
+					printf("\n\n\t\tINVALID INPUT! Please input again\n");
+					c = 0;
+				}
+				else
+					c = -1;
+			}
+			sscanf(Year, "%d", &book[count].year);
+			//Entering year ends
+			//Entering author starts
+			int t = 0;
+			while (t < 2)
+			{
+				t = 0;
+				printf("\nEnter author name\t      : ");
+				gets(book[count].author);
+				int r, j;
+				for (int i = 0; book[count].author[i] != '\0'; i++)
+				{
+					r = isalpha(book[count].author[i]); //t remains 0 if there is no alphabet in name
+					j = isdigit(book[count].author[i]); //j remains 0 if there is no digit in name
+					if (r != 0)
+						t += 2;
+					else
+						t--;
+					if (j != 0)
+						t++;
+				}
+				if (t < 2)
+				{
+					printf("\n\n\t\t\tPLEASE ENTER A VALID NAME\n\n\n\n");
+				}
+			}
+		}//Entering author ends
+		strncpy(book[count].status, "Available ", 10);
+		count++;
+		return 0;
+	}
+	else
+		return -1;
+}
+//add() ends
+int search(void)
+{
+	system("COLOR 8F");
+	char nameKey[NAMESIZE], IsbnKey[20];
+	int option;
+	char opt[10];
+	system("cls");
+	printf("%.100s", "........................................................................................................................");
+	printf("%40s", "\n\t\t\tSEARCH");
+	printf("%.100s", "\n........................................................................................................................");
+	printf("\n\t\t Please select how do want to search\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+	gets(opt);
+	sscanf(opt, "%d", &option);
+	while (strlen(opt) != 1 || 0 == isdigit(opt[0]) || option > 2 || option < 0)
+	{
+		system("cls");
+		printf("%.100s", "........................................................................................................................");
+		printf("%40s", "\n\t\t\tSEARCH");
+		printf("%.100s", "\n........................................................................................................................");
+		printf("\n\n\t\t\t\tERROR!\n\t\tPlease select correct option!\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+		gets(opt);
+		sscanf(opt, "%d", &option);
+	}
+	int counter = 0;
+	while (option != 0)
+	{
+		if (counter != 0)
+		{
+			system("cls");
+			printf("%.100s", "........................................................................................................................");
+			printf("%40s", "\n\t\t\tSEARCH");
+			printf("%.100s", "\n........................................................................................................................");
+			printf("\n\t\t Please select how do you want to search\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+			gets(opt);
+			sscanf(opt, "%d", &option);
+			while (strlen(opt) != 1 || 0 == isdigit(opt[0]) || option > 2 || option < 0)
+			{
+				system("cls");
+				printf("%.100s", "........................................................................................................................");
+				printf("%40s", "\n\t\t\tSEARCH");
+				printf("%.100s", "\n........................................................................................................................");
+				printf("\n\n\t\t\t\tERROR!\n\t\tPlease select correct option!\n\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+				gets(opt);
+				sscanf(opt, "%d", &option);
+			}
+		}
+		switch (option)
+		{
+		case 1: //When user chooses to search by name
+			printf("\n\n\t\tEnter name of the book :\t");
+			gets(nameKey);
+			int t = searchName(nameKey);
+			if (t != -1) //If the search is successfull
+			{
+				Display(t);
+				printf("\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			else //If the search is unsuccessfull
+			{
+				printf("\n\n\t\tBOOK NOT FOUND\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			counter++;
+			break;
+		case 2: //If the user chooses to saerch by ISBN
+			printf("\n\n\t\tEnter ISBN of the book :\t");
+			gets(IsbnKey);
+			int s = searchISBN(IsbnKey);
+			if (s != -1) //If the search is successfull
+			{
+				Display(s);
+				printf("\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			else //If the search is unsuccessfull
+			{
+				printf("\n\n\t\tBOOK NOT FOUND\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			counter++;
+			break;
+		case 0:
+			option = 0;
+			system("cls");
+			break;
+		default:
+			break;
+		}
+	}
+} //search() ends
+int searchName(char key[])
+{
+	for (int i = 0; i < count; i++)
+	{
+		if (0 == strcmp(book[i].name, key))
+			return i; //returns index of the found match
+	}
+	return -1;
+}//searchName() ends
+int searchISBN(char key[])
+{
+	for (int i = 0; i < count; i++)
+	{
+		if (0 == strcmp(book[i].isbn, key))
+			return i;
+	}
+	return -1;
+}//searchISBN() ends
+int DeleteBook(void)
+{
+	system("COLOR 8F");
+	char nameKey[NAMESIZE], IsbnKey[20];
+	int option;
+	char opt[10];
+	system("cls");
+	printf("%.100s", "........................................................................................................................");
+	printf("%40s", "\n\t\t\tDELETE");
+	printf("%.100s", "\n........................................................................................................................");
+	printf("\n\t\t Please select how do want to delete\n\n\t\t\t1. Delete by name\n\n\t\t\t2. Delete by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+	gets(opt);
+	sscanf(opt, "%d", &option);
+	while (strlen(opt) != 1 || 0 == isdigit(opt[0]) || option > 2 || option < 0)
+	{
+		system("cls");
+		printf("%.100s", "........................................................................................................................");
+		printf("%40s", "\n\t\t\tDELETE");
+		printf("%.100s", "\n........................................................................................................................");
+		printf("\n\n\t\t\t\tERROR!\n\t\tPlease select correct option\n\n\t\t\t1. Delete by name\n\n\t\t\t2. Delete by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+		gets(opt);
+		sscanf(opt, "%d", &option);
+	}
+	int counter = 0;
+	while (option != 0)
+	{
+		if (counter != 0)
+		{
+			system("cls");
+			printf("%.100s", "........................................................................................................................");
+			printf("%40s", "\n\t\t\tDELETE");
+			printf("%.100s", "\n........................................................................................................................");
+			printf("\n\t\t Please select how do want to delete\n\n\t\t\t1. Delete by name\n\n\t\t\t2. Delete by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+			gets(opt);
+			sscanf(opt, "%d", &option);
+			while (strlen(opt) != 1 || 0 == isdigit(opt[0]) || option > 2 || option < 0)
+			{
+				system("cls");
+				printf("%.100s", "........................................................................................................................");
+				printf("%40s", "\n\t\t\tDELETE");
+				printf("%.100s", "\n........................................................................................................................");				printf("\n\n\t\t\t\tERROR!\n\t\tPlease select correct option\n\n\t\t\t1. Delete by name\n\n\t\t\t2. Delete by ISBN\n\n\t\t\t3. Exit\n\n\t\tOption:\t\t");
+				gets(opt);
+				sscanf(opt, "%d", &option);
+			}
+		}
+		switch (option)
+		{
+		case 1:
+			printf("\n\n\t\tEnter name of the book :\t");
+			gets(nameKey);
+			counter++;
+			int t = searchName(nameKey);
+			if (t != -1) //If the search is successfull
+			{
+				system("cls");
+				printf("%.100s", "........................................................................................................................");
+				printf("%40s", "\n\t\t\tDELETE");
+				printf("%.100s", "\n........................................................................................................................");
+				printf("\n\n\t\t ######### Book Details #########");
+				printf("\n\n\t\tBook Name      :    %s", book[t].name);
+				printf("\n\t\tBook Author    :    %s", book[t].author);
+				printf("\n\t\tBook ISBN      :    %s", book[t].isbn);
+				printf("\n\t\tPublishing Year:    %d\n\n\n", book[t].year);
+				printf("\n\t\tStatus			:    %.10s\n\n\n", book[t].status);
+				char RemBook[10];
+				int op = 0;
+				printf("\n\t\tARE YOU SURE YOU WANT TO DELETE THE BOOK?\n\t\tOptions\n\t\t\t1. Yes\n\t\t\t2. No\n\t\tOption :\t");
+				gets(RemBook);
+				sscanf(RemBook, "%d", &op);
+				while (strlen(RemBook) != 1 || ((op != 1) && (op != 2)))
+				{
+					printf("\n\n\t\t\t\tERROR!\n\t\tPlease Enter Correct Option\n\t\tARE YOU SURE YOU WANT TO DELETE THE BOOK\n\t\tOptions\n\t\t\t1. Yes\n\t\t\t2. No\n\t\tOption :\t");
+					gets(RemBook);
+					sscanf(RemBook, "%d", &op);
+				}
+				system("pause");
+				if (1 == op)
+				{
+					for (int j = t; j < count - 1; j++)
+					{
+						book = book + 1;
+					}
+					count--;
+					printf("\n\n\t\tBOOK DELETED SUCCESSFULLY!\n\n\n");
+					system("pause");
+				}
+				else
+				{
+					printf("\n\n\t\tYou Chose not to delete the book!\n\n\n");
+					system("pause");
+				}
+			}
+			else //If the search is unsuccessfull
+			{
+				printf("\n\n\t\tBOOK NOT FOUND\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			break;
+		case 2:
+			printf("\n\n\t\tEnter ISBN of the book :\t");
+			gets(IsbnKey);
+			counter++;
+			t = searchISBN(IsbnKey);
+			if (t != -1) //If the search is successfull
+			{
+				system("cls");
+				printf("%.100s", "........................................................................................................................");
+				printf("%40s", "\n\t\t\tDELETE");
+				printf("%.100s", "\n........................................................................................................................");				printf("\n\n\t\t ######### Book Details #########");
+				printf("\n\n\t\tBook Name      :    %s", book[t].name);
+				printf("\n\t\tBook Author    :    %s", book[t].author);
+				printf("\n\t\tBook ISBN      :    %s", book[t].isbn);
+				printf("\n\t\tPublishing Year:    %d\n\n\n", book[t].year);
+				printf("\n\t\tStatus			:    %.10s\n\n\n", book[t].status);
+				char RemBook[10];
+				int op = 0;
+				printf("\n\t\tARE YOU SURE YOU WANT TO DELETE THE BOOK?\n\t\tOptions\n\t\t\t1. Yes\n\t\t\t2. No\n\t\tOption :\t");
+				gets(RemBook);
+				sscanf(RemBook, "%d", &op);
+				while (strlen(RemBook) != 1 || ((op != 1) && (op != 2)))
+				{
+					printf("\n\n\t\t\t\tERROR!\n\t\tPlease Enter Correct Option\n\t\tARE YOU SURE YOU WANT TO DELETE THE BOOK?\n\t\tOptions\n\t\t\t1. Yes\n\t\t\t2. No\n\t\tOption :\t");
+					gets(RemBook);
+					sscanf(RemBook, "%d", &op);
+				}
+				system("pause");
+				if (1 == op)
+				{
+					int tmp = 0;
+					for (int j = t; j < count - 1; j++)
+					{
+						book = book + 1;
+					}
+					count--;
+					system("cls");
+					printf("\n\n\t\tBOOK DELETED SUCCESSFULLY!\n");
+					system("pause");
+				}
+				else
+				{
+					printf("\n\n\t\tYou Chose not to delete the book!\n");
+					system("pause");
+				}
+			}
+			else //If the search is unsuccessfull
+			{
+				printf("\n\n\t\tBOOK NOT FOUND\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			break;
+		}
+	}
+
+}
+void Display(int i)
+{
+	system("COLOR 8F");
+	system("cls");
+	printf("\n\n\t-------------------------------------------------\n");
+	printf("\t\t ######### Book Details #########");
+	printf("\n\t-------------------------------------------------\n");
+	printf("\n\n\t\tBook Name		:    %s", book[i].name);
+	printf("\n\t\tBook Author		:    %s", book[i].author);
+	printf("\n\t\tBook ISBN		:    %s", book[i].isbn);
+	printf("\n\t\tPublishing Year		:    %d\n\n\n", book[i].year);
+	printf("\n\t\tStatus			:    %.10s\n\n\n", book[i].status);
+}//Display() ends
+void ShowList(void)
+{
+	system("COLOR 8F");
+	system("cls");
+	printf("%.100s", "........................................................................................................................");
+	printf("%40s", "\n\t\t\tBOOK LIST");
+	printf("%.100s", "\n........................................................................................................................");
+	for (int i = 0; i < count; i++)
+	{
+		printf("\n\n\t\t ######### Book %d Details #########", i + 1);
+		printf("\n\n\t\tBook Name      :    %s", book[i].name);
+		printf("\n\t\tBook Author    :    %s", book[i].author);
+		printf("\n\t\tBook ISBN      :    %s", book[i].isbn);
+		printf("\n\t\tPublishing Year:    %d\n", book[i].year);
+		printf("\n\t\tStatus         :    %.10s\n\n\n", book[i].status);
+	}
+	printf("\n\n\n");
+	system("pause");
+}
+void Issue(void)
+{
+	system("COLOR 8F");
+	system("cls");
+	char nameKey[NAMESIZE], IsbnKey[20];
+	int option;
+	char opt[10];
+	printf("%.100s", "........................................................................................................................");
+	printf("%40s", "\n\t\t\tISSUE");
+	printf("%.100s", "\n........................................................................................................................");
+	printf("\n\t\t Please select how do want to search\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+	gets(opt);
+	sscanf(opt, "%d", &option);
+	while (strlen(opt) != 1 || 0 == isdigit(opt[0]) || option > 2 || option < 0)
+	{
+		system("cls");
+		printf("%.100s", "........................................................................................................................");
+		printf("%40s", "\n\t\t\tISSUE");
+		printf("%.100s", "\n........................................................................................................................");
+		printf("\n\n\t\t\t\tERROR!\n\n\t\tPlease select correct option!\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+		gets(opt);
+		sscanf(opt, "%d", &option);
+	}
+	int counter = 0;
+	while (option != 0)
+	{
+		if (counter != 0)
+		{
+			system("cls");
+			printf("%.100s", "........................................................................................................................");
+			printf("%40s", "\n\t\t\tISSUE");
+			printf("%.100s", "\n........................................................................................................................");
+			printf("\n\t\t Please select how do you want to search\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+			gets(opt);
+			sscanf(opt, "%d", &option);
+			while (strlen(opt) != 1 || 0 == isdigit(opt[0]) || option > 2 || option < 0)
+			{
+				system("cls");
+				printf("%.100s", "........................................................................................................................");
+				printf("%40s", "\n\t\t\tISSUE");
+				printf("%.100s", "\n........................................................................................................................");
+				printf("\n\n\t\t\t\tERROR!\n\t\tPlease select correct option!\n\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+				gets(opt);
+				sscanf(opt, "%d", &option);
+			}
+		}
+		switch (option)
+		{
+		case 1: //When user chooses to search by name
+			printf("\n\n\t\tEnter name of the book you are going to issue  :\t");
+			gets(nameKey);
+			int t = searchName(nameKey);
+			if (t != -1) //If the search is successfull
+			{
+
+				if (book[t].status[0] == 'I')
+				{
+					printf("\n\n\n\n\t\tWE ARE SORRY!\n\t\tTHE BOOK IS ALREADY ISSUED\n\n\t\t");
+					system("pause");
+					system("cls");
+				}
+				else
+				{
+					strncpy(book[t].status, "Issued    ", 10);
+					Display(t);
+					printf("\n\n\n\n\t\tBOOK ISSUED SUCCESSFULLY\n\n");
+					system("pause");
+					system("cls");
+				}
+			}
+			else //If the search is unsuccessfull
+			{
+				printf("\n\n\t\tThe Book you are searching for DOES NOT EXIST!\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			counter++;
+			break;
+		case 2: //If the user chooses to saerch by ISBN
+			printf("\n\n\t\tEnter ISBN of the book you are going to issue :\t");
+			gets(IsbnKey);
+			int s = searchISBN(IsbnKey);
+			if (s != -1) //If the search is successfull
+			{
+
+				if (book[s].status[0] == 'I')
+				{
+					system("cls");
+					printf("\n\n\n\n\t\tWE ARE SORRY\n\t\tTHE BOOK IS ALREADY ISSUED\n\n\t\t");
+					system("pause");
+					system("cls");
+				}
+				else
+				{
+					strncpy(book[s].status, "Issued    ", 10);
+					Display(s);
+					printf("\n\n\n\n\t\tBOOK ISSUED SUCCESSFULLY\n\n");
+					system("pause");
+					system("cls");
+				}
+			}
+			else //If the search is unsuccessfull
+			{
+				printf("\n\n\t\tBOOK NOT FOUND\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			counter++;
+			break;
+		case 3:
+			option = 3;
+			system("cls");
+			break;
+		default:
+			counter++;
+			break;
+		}
+	}
+}
+void Receive(void)
+{
+	system("COLOR 8F");
+	char nameKey[NAMESIZE], IsbnKey[20];
+	int option;
+	char opt[10];
+	system("cls");
+	printf("%.100s", "........................................................................................................................");
+	printf("%40s", "\n\t\t\tRECEIVE");
+	printf("%.100s", "\n........................................................................................................................");
+	printf("\n\t\t Please select how do want to search\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+	gets(opt);
+	sscanf(opt, "%d", &option);
+	while (strlen(opt) != 1 || 0 == isdigit(opt[0]) || option > 2 || option < 0)
+	{
+		system("cls");
+		printf("%.100s", "........................................................................................................................");
+		printf("%40s", "\n\t\t\tRECEIVE");
+		printf("%.100s", "\n........................................................................................................................");
+		printf("\n\n\t\t\t\tERROR!\n\n\t\tPlease select correct option!\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+		gets(opt);
+		sscanf(opt, "%d", &option);
+	}
+	int counter = 0;
+	while (option != 0)
+	{
+		if (counter != 0)
+		{
+			system("cls");
+			printf("%.100s", "........................................................................................................................");
+			printf("%40s", "\n\t\t\tRECEIVE");
+			printf("%.100s", "\n........................................................................................................................");
+			printf("\n\t\t Please select how do you want to search\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+			gets(opt);
+			sscanf(opt, "%d", &option);
+			while (strlen(opt) != 1 || 0 == isdigit(opt[0]) || option > 2 || option < 0)
+			{
+				system("cls");
+				printf("%.100s", "........................................................................................................................");
+				printf("%40s", "\n\t\t\tRECEIVE");
+				printf("%.100s", "\n........................................................................................................................");
+				printf("\n\n\t\t\t\tERROR!\n\t\tPlease select correct option!\n\n\n\t\t\t1. Search by name\n\n\t\t\t2. Search by ISBN\n\n\t\t\t0. Exit\n\n\t\tOption:\t\t");
+				gets(opt);
+				sscanf(opt, "%d", &option);
+			}
+		}
+		switch (option)
+		{
+		case 1: //When user chooses to search by name
+			printf("\n\n\t\tEnter name of the book you are going to receive:\t");
+			gets(nameKey);
+			int t = searchName(nameKey);
+			if (t != -1) //If the search is successfull
+			{
+
+				if (book[t].status[0] == 'A')
+				{
+					printf("\n\n\n\n\t\tTHE BOOK YOU ARE TRYNG TO RECEIVE IS ALREADY IN THE LIBRARY\n\n\t\t");
+					system("pause");
+					system("cls");
+				}
+				else
+				{
+					strncpy(book[t].status, "Available ", 10);
+					Display(t);
+					printf("\n\n\n\n\t\tBOOK RECEIVED SUCCESSFULLY\n\n");
+					system("pause");
+					system("cls");
+				}
+			}
+			else //If the search is unsuccessfull
+			{
+				printf("\n\n\t\tThe Book you are searching for DOES NOT EXIST!\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			counter++;
+			break;
+		case 2: //If the user chooses to saerch by ISBN
+			printf("\n\n\t\tEnter ISBN of the book you are going to receive :\t");
+			gets(IsbnKey);
+			int s = searchISBN(IsbnKey);
+			if (s != -1) //If the search is successfull
+			{
+
+				if (book[s].status[0] == 'A')
+				{
+					printf("\n\n\n\n\t\tTHE BOOK YOU ARE TRYNG TO RECEIVE IS ALREADY IN THE LIBRARY\n\n\t\t");
+					system("pause");
+					system("cls");
+				}
+				else
+				{
+					strncpy(book[s].status, "Issued    ", 10);
+					Display(s);
+					printf("\n\n\n\n\t\tBOOK RECEIVED SUCCESSFULLY\n\n");
+					system("pause");
+					system("cls");
+				}
+			}
+			else //If the search is unsuccessfull
+			{
+				printf("\n\n\t\tBOOK NOT FOUND\n\n\n\n");
+				system("pause");
+				system("cls");
+			}
+			counter++;
+			break;
+		case 3://exit
+			option = 3;
+			system("cls");
+			break;
+		default:
+			counter++;
+			break;
+		}
+	}
